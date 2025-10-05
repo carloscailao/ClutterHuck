@@ -4,7 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import { supabase } from "@/lib/supabaseClient";
 import { AuthChangeEvent, Session, User } from "@supabase/supabase-js";
 
-// Custom hook to get current Supabase user
+// Hook to get current Supabase user
 const useUser = () => {
   const [user, setUser] = useState<User | null>(null);
 
@@ -16,7 +16,7 @@ const useUser = () => {
     getUser();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (event: AuthChangeEvent, session: Session | null) => {
+      (_event: AuthChangeEvent, session: Session | null) => {
         setUser(session?.user ?? null);
       }
     );
@@ -34,34 +34,39 @@ export default function ProfileScreen() {
 
   // Fetch current avatar
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
 
-    const fetchProfile = async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("avatar_url")
-        .eq("auth_uid", user.id) // use auth_uid
-        .single();
-
-      if (error) console.log("Error fetching profile:", error.message);
-      else setAvatar(data?.avatar_url || null);
+    const fetchAvatar = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("avatar_url")
+          .eq("auth_uid", user.id)
+          .single();
+        if (error) {
+          console.log("Error fetching profile:", error.message);
+        } else {
+          setAvatar(data?.avatar_url || null);
+        }
+      } catch (err) {
+        console.log("Unexpected error fetching avatar:", err);
+      }
     };
 
-    fetchProfile();
+    fetchAvatar();
   }, [user]);
 
-  const pickImage = async () => {
-    if (!user) return;
+  const pickAndUploadImage = async () => {
+    if (!user?.id) return;
 
+    // Request permission
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(
-        "Permission needed",
-        "We need access to your photos to set your profile picture."
-      );
+      Alert.alert("Permission needed", "We need access to your photos to set your profile picture.");
       return;
     }
 
+    // Pick image
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -77,33 +82,39 @@ export default function ProfileScreen() {
 
     try {
       setLoading(true);
+      console.log("Picked file URI:", fileUri);
 
+      // Convert to blob
       const response = await fetch(fileUri);
       const fileBlob = await response.blob();
+      console.log("Blob created");
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from("avatars")
         .upload(filePath, fileBlob, { upsert: true });
       if (uploadError) throw uploadError;
+      console.log("Uploaded to Supabase Storage");
 
       // Get public URL
       const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
-      const publicUrl = urlData.publicUrl;
+      const publicUrl = urlData?.publicUrl;
+      console.log("Public URL:", publicUrl);
 
-      // Save URL to profiles table using auth_uid
+      if (!publicUrl) throw new Error("Could not get public URL");
+
+      // Update profiles table
       const { error: dbError } = await supabase
         .from("profiles")
         .update({ avatar_url: publicUrl })
-        .eq("auth_uid", user.id); // use auth_uid for RLS
-
+        .eq("auth_uid", user.id);
       if (dbError) throw dbError;
 
       setAvatar(publicUrl);
       Alert.alert("Success", "Profile picture updated!");
     } catch (err: any) {
-      console.log("Upload error:", err.message);
-      Alert.alert("Error", "Could not upload avatar. Please try again.");
+      console.log("Error uploading avatar:", err.message);
+      Alert.alert("Error", "Could not upload avatar. See console logs.");
     } finally {
       setLoading(false);
     }
@@ -118,7 +129,7 @@ export default function ProfileScreen() {
       ) : (
         <View style={[styles.avatar, styles.placeholder]} />
       )}
-      <Button title="Upload Profile Picture" onPress={pickImage} />
+      <Button title="Upload Profile Picture" onPress={pickAndUploadImage} />
     </View>
   );
 }
