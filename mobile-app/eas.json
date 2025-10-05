@@ -6,7 +6,13 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      }
     },
     "preview": {
       "distribution": "internal",
@@ -14,7 +20,7 @@
         "buildType": "apk"
       },
       "ios": {
-        "buildType": "archive"
+        "simulator": false
       }
     },
     "production": {
