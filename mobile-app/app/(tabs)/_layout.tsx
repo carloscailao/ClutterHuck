@@ -13,7 +13,7 @@ export default function TabLayout() {
   const user = useUser();
 
   // If user not logged in, show Auth screen instead of tabs
-  if (!user) return <AuthScreen />;
+  // if (!user) return <AuthScreen />;
 
   return (
     <Tabs
