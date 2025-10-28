@@ -136,7 +136,6 @@ export default function DonationsStep() {
             styles.button,
             {
               backgroundColor: buttonBg,
-              opacity: isEmpty ? 0.6 : 1,
             },
           ]}
         >

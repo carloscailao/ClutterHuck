@@ -11,7 +11,7 @@ export default function PrivacyStep() {
     allowDMs: false,
   });
 
-  const { colors } = useTheme();
+  const { colors, dark } = useTheme();
 
   const toggle = (key: keyof typeof prefs) =>
     setPrefs((p) => ({ ...p, [key]: !p[key] }));
@@ -19,6 +19,9 @@ export default function PrivacyStep() {
   const handleFinish = () => {
     router.replace('/(tabs)');
   };
+
+  const buttonBg = dark ? '#fff' : '#000';
+  const buttonTextColor = dark ? '#000' : '#fff';
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -48,17 +51,26 @@ export default function PrivacyStep() {
         ))}
       </View>
 
-      {/* Button */}
-      <View style={styles.buttonContainer}>
-        <Button
-          mode="contained"
-          onPress={handleFinish}
-          style={[styles.button, { backgroundColor: colors.primary }]}
-          labelStyle={{ color: colors.background, fontWeight: '600' }}
+      <TouchableOpacity
+        onPress={handleFinish}
+        activeOpacity={0.8}
+        style={[
+          styles.button,
+          {
+            backgroundColor: buttonBg,
+            alignSelf: 'center',
+          },
+        ]}
+      >
+        <Text
+          style={[
+            styles.buttonText,
+            { color: buttonTextColor },
+          ]}
         >
           Finish
-        </Button>
-      </View>
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -90,7 +102,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   button: {
-    width: '50%',
-    borderRadius: 10
+    width: '60%',
+    paddingVertical: 14,
+    borderRadius: 50,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
