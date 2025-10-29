@@ -1,84 +1,79 @@
-import React, { useRef, useState } from 'react';
-import { View, Text, Image, StyleSheet, FlatList, Dimensions, TouchableOpacity } from 'react-native';
+import React from 'react';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+  useColorScheme,
+} from 'react-native';
 import { router } from 'expo-router';
+import { useTheme } from '@react-navigation/native';
 
-const { width } = Dimensions.get('window');
-
-const slides = [
-  {
-    id: '1',
-    image: require('@/assets/images/intro/intro1.png'),
-    header: 'Welcome!',
-    subtitle: "Find purpose in what you keep and give new life to what you dont.",
-  },
-  {
-    id: '2',
-    image: require('@/assets/images/intro/intro2.png'),
-    header: 'Manage your space',
-    subtitle: 'Use AI-powered ClutterHelp to scan, label, and track your items effortlessly.\n\nGet gentle guidance. Not sure where to start? Our smart assistant helps you break things down, one small win at a time.',
-  },
-  {
-    id: '3',
-    image: require('@/assets/images/intro/intro3.png'),
-    header: 'Let go, give forward',
-    subtitle: "Post items you're ready to part with and make them visible to those who need them.\n\nBrows trusted organizations or individuals, and send your items where they'll make a difference.",
-  },
-  {
-    id: '4',
-    image: require('@/assets/images/intro/intro4.png'),
-    header: 'Clean up, level up!',
-    subtitle: 'Upon achieving decluttering tasks, earn badges and display them on your profile!\n\nEarn coupons and vouchers from partner organizations when you donate!',
-  },
-];
+const { width, height } = Dimensions.get('window');
 
 export default function IntroductionPage() {
-  const [index, setIndex] = useState(0);
-  const flatListRef = useRef<FlatList>(null);
+  const { colors, dark } = useTheme();
+  const colorScheme = useColorScheme();
 
-  const nextSlide = () => {
-    if (index < slides.length - 1) {
-      flatListRef.current?.scrollToIndex({ index: index + 1 });
-    } else {
-      router.replace('/(auth)'); // Go to login/signup
-    }
+  const handleGetStarted = () => {
+    router.replace('/(auth)');
   };
 
-  return (
-    <View style={styles.container}>
-      <FlatList
-        data={slides}
-        ref={flatListRef}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={(e) => setIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
-        renderItem={({ item }) => (
-          <View style={[styles.slide, { width }]}>
-            <Image source={item.image} style={styles.image} resizeMode="contain" />
-            <Text style={styles.header}>{item.header}</Text>
-            <Text style={styles.subtitle}>{item.subtitle}</Text>
-          </View>
-        )}
-        keyExtractor={(item) => item.id}
-      />
+  const imageSource = dark
+    ? require('@/assets/images/intro/introDark.png')
+    : require('@/assets/images/intro/introLight.png');
 
-      {/* Pagination dots */}
-      <View style={styles.pagination}>
-        {slides.map((_, i) => (
-          <View
-            key={i}
-            style={[
-              styles.dot,
-              { backgroundColor: i === index ? '#0A7EA4' : '#D3D3D3' },
-            ]}
-          />
-        ))}
+  return (
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: dark ? colors.background : '#FFFFFF', // ✅ pure white in light mode
+        },
+      ]}
+    >
+      {/* Top App Name */}
+      <Text style={[styles.brand, { color: colors.text }]}>ClutterHuck</Text>
+
+      {/* Illustration */}
+      <Image source={imageSource} style={styles.image} resizeMode="contain" />
+
+      {/* Header + Subtext */}
+      <View style={styles.textContainer}>
+        <Text style={[styles.header, { color: colors.text }]}>
+          Declutter with Purpose
+        </Text>
+        <Text
+          style={[
+            styles.subtext,
+            { color: colors.text + 'CC' },
+          ]}
+        >
+          Turn unused items into opportunities — for you and others. Simplify
+          your space, track what matters, and make giving back effortless.
+        </Text>
       </View>
 
-      {/* Custom Next button */}
-      <TouchableOpacity style={styles.nextButton} onPress={nextSlide}>
-        <Text style={styles.nextButtonText}>
-          {index === slides.length - 1 ? 'Get Started' : 'Next'}
+      {/* Button */}
+      <TouchableOpacity
+        style={[
+          styles.button,
+          {
+            backgroundColor: dark ? '#FFFFFF' : '#000000',
+          },
+        ]}
+        onPress={handleGetStarted}
+        activeOpacity={0.8}
+      >
+        <Text
+          style={[
+            styles.buttonText,
+            { color: dark ? '#000000' : '#FFFFFF' },
+          ]}
+        >
+          Get Started
         </Text>
       </TouchableOpacity>
     </View>
@@ -86,55 +81,49 @@ export default function IntroductionPage() {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: '#FFFFFF', // Always white
-    alignItems: 'center', 
-    justifyContent: 'center' 
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 25,
   },
-  slide: { 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    padding: 20 
+  brand: {
+    fontSize: 22,
+    fontWeight: '800',
+    position: 'absolute',
+    top: 60,
   },
-  image: { 
-    width: width * 0.8, 
-    height: width * 0.7, 
-    marginBottom: 30 
+  image: {
+    width: width * 0.8,
+    height: height * 0.35,
+    marginBottom: 40,
   },
-  header: { 
-    fontSize: 24, 
-    fontWeight: 'bold', 
-    textAlign: 'center', 
-    color: '#11181C',
-    marginBottom: 10 
+  textContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 60,
+    paddingHorizontal: 20,
+    width: '100%',
   },
-  subtitle: { 
-    fontSize: 16, 
-    textAlign: 'center', 
-    color: '#333333' 
+  header: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 14,
   },
-  pagination: { 
-    flexDirection: 'row', 
-    justifyContent: 'center', 
-    marginVertical: 20 
+  subtext: {
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 22,
+    maxWidth: '90%',
   },
-  dot: { 
-    width: 10, 
-    height: 10, 
-    borderRadius: 5, 
-    marginHorizontal: 5 
+  button: {
+    paddingVertical: 16,
+    paddingHorizontal: 60,
+    borderRadius: 50,
   },
-  nextButton: {
-    backgroundColor: '#0A7EA4',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 25,
-    marginBottom: 30,
-  },
-  nextButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
+  buttonText: {
+    fontWeight: '700',
     fontSize: 16,
     textAlign: 'center',
   },
