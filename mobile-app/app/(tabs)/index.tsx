@@ -1,98 +1,101 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+// app/(tabs)/index.tsx
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import React from 'react';
+import { ScrollView, Text, View, StyleSheet, Image } from 'react-native';
 
 export default function HomeScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* Hero Section */}
+      <View style={styles.hero}>
         <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+          source={require('@/assets/images/clutterhuck-logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+        <Text style={styles.title}>Welcome to ClutterHuck</Text>
+        <Text style={styles.subtitle}>
+          Responsible Decluttering for a Sustainable Future
+        </Text>
+      </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      {/* Description */}
+      <Text style={styles.body}>
+        Anchored in the UN Sustainable Development Goal 12 — 
+        <Text style={styles.bold}> Responsible Consumption and Production</Text> — 
+        ClutterHuck empowers Filipinos to declutter responsibly by connecting
+        them with recycling organizations and donation partners.
+      </Text>
+
+      {/* Features Section */}
+      <View style={styles.features}>
+        <Text style={styles.sectionTitle}>What You Can Do</Text>
+        <Text style={styles.feature}>• Digitize your clutter inventory</Text>
+        <Text style={styles.feature}>• Donate, sell, or auction unused items</Text>
+        <Text style={styles.feature}>• Connect with peers and organizations</Text>
+      </View>
+
+      {/* Footer / Context */}
+      <Text style={styles.footer}>
+        Start your sustainable decluttering journey today.
+      </Text>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flexGrow: 1,
+    backgroundColor: '#fff',
+    padding: 24,
   },
-  stepContainer: {
-    gap: 8,
+  hero: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 10,
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#1B5E20',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#388E3C',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  body: {
+    fontSize: 16,
+    color: '#444',
+    lineHeight: 22,
+    marginBottom: 20,
+  },
+  bold: {
+    fontWeight: '600',
+  },
+  features: {
+    marginBottom: 30,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2E7D32',
+    marginBottom: 10,
+  },
+  feature: {
+    fontSize: 16,
+    color: '#333',
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  footer: {
+    fontSize: 15,
+    textAlign: 'center',
+    color: '#666',
   },
 });
