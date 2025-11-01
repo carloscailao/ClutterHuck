@@ -59,13 +59,13 @@ export default function AuthScreen() {
     });
   };
 
-  // clear error when editing
+  // Reset error messages when typing
   useEffect(() => {
     if (errorMessage) setErrorMessage('');
     if (invalidCred) setInvalidCred(false);
   }, [email, password]);
 
-  // validate password for sign-up
+  // Password validation
   useEffect(() => {
     if (isSignUp) {
       if (password.length === 0) setPasswordValid(null);
@@ -73,6 +73,7 @@ export default function AuthScreen() {
     }
   }, [password, isSignUp]);
 
+  // Auth Handler
   const handleAuth = async () => {
     setLoading(true);
     setErrorMessage('');
@@ -86,33 +87,58 @@ export default function AuthScreen() {
           return;
         }
 
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        // Sign-Up
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+
         if (error) {
+          console.error('Sign-up Error:', error);
           if (error.message.includes('already registered'))
             setErrorMessage('This email is already registered.');
           else setErrorMessage(error.message);
           return;
         }
 
-        if (data.user?.id)
+        if (data.user?.id) {
+          console.log('User created:', data.user);
           await supabase.from('profiles').insert([{ auth_uid: data.user.id }]);
-        Alert.alert('Welcome!', 'Let’s personalize your experience 🎉');
-        router.replace('/(auth)/onboarding/username');
+        }
+
+        // OTP Page
+        Alert.alert(
+          'Verification Required',
+          'We sent a verification code to your email. Please enter it to continue.'
+        );
+
+        router.push({
+          pathname: '/(auth)/otpVerify',
+          params: { email },
+        });
       } else {
+        // Log In
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
+
         if (error) {
+          console.error('Sign-in Error:', error);
           if (error.message.toLowerCase().includes('invalid')) {
             setErrorMessage('Incorrect email or password.');
             setInvalidCred(true);
           } else setErrorMessage(error.message);
           return;
         }
-        if (data.session) router.replace('/(tabs)');
+
+        if (data.session) {
+          console.log('Sign-in successful:', data.session);
+          router.replace('/(tabs)');
+        }
       }
-    } catch {
+    } catch (err) {
+      console.error('Unexpected Error:', err);
       setErrorMessage('Network error. Please try again.');
     } finally {
       setLoading(false);
@@ -131,7 +157,7 @@ export default function AuthScreen() {
     ? isEmpty || isInvalidEmail || !passwordValid
     : isEmpty || invalidCred;
 
-  // Colors
+  // Theme Colors
   const buttonBg = dark ? '#FFF' : '#000';
   const buttonTextColor = dark ? '#000' : '#FFF';
   const borderSoft = dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
@@ -142,10 +168,8 @@ export default function AuthScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
       <Text style={[styles.brand, { color: colors.text }]}>ClutterHuck</Text>
 
-      {/* Animation */}
       <Animated.View
         style={{
           opacity: fadeAnim,
@@ -169,7 +193,7 @@ export default function AuthScreen() {
               { backgroundColor: containerBg, borderColor: borderSoft },
             ]}
           >
-            {/* EMAIL */}
+            {/* Email Text Input */}
             <TextInput
               label="  Email"
               value={email}
@@ -196,7 +220,7 @@ export default function AuthScreen() {
               }}
             />
 
-            {/* Password */}
+            {/* Password Text Input */}
             <View style={{ position: 'relative' }}>
               <TextInput
                 label="  Password"
@@ -245,26 +269,20 @@ export default function AuthScreen() {
                   },
                 }}
               />
-
-              {/* Password error hint */}
               {isSignUp && password.length > 0 && !passwordValid && (
                 <Text
-                  style={[
-                    styles.passwordHint,
-                    { color: passwordErrorColor },
-                  ]}
+                  style={[styles.passwordHint, { color: passwordErrorColor }]}
                 >
                   Password must be at least 6 characters long.
                 </Text>
               )}
             </View>
 
-            {errorMessage && !isSignUp ? (
-              <Text style={[styles.error, { color: 'red' }]}>
-                {errorMessage}
-              </Text>
+            {errorMessage ? (
+              <Text style={[styles.error, { color: 'red' }]}>{errorMessage}</Text>
             ) : null}
 
+            {/* Main Button */}
             <TouchableOpacity
               onPress={handleAuth}
               activeOpacity={0.8}
@@ -283,12 +301,12 @@ export default function AuthScreen() {
                 {loading
                   ? 'Loading...'
                   : isSignUp
-                  ? 'Create Account'
-                  : 'Log In'}
+                    ? 'Create Account'
+                    : 'Log In'}
               </Text>
             </TouchableOpacity>
 
-            {/* Switch Mode */}
+            {/* Switching */}
             <View style={styles.switchContainer}>
               {isSignUp ? (
                 <Text style={[styles.switchText, { color: fadedText }]}>
@@ -322,10 +340,20 @@ export default function AuthScreen() {
         </View>
       </Animated.View>
 
-      {/* SKIP */}
+      {/* Skip to Onboarding */}
       <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
         <Text style={[styles.skipText, { color: colors.text + '88' }]}>
           Skip to Onboarding (Sample)
+        </Text>
+      </TouchableOpacity>
+
+      {/* View OTP Page */}
+      <TouchableOpacity
+        onPress={() => router.push({ pathname: '/(auth)/otpVerify', params: { email } })}
+        style={styles.skipButton}
+      >
+        <Text style={[styles.skipText, { color: colors.text + '88' }]}>
+          View OTP Page (Sample)
         </Text>
       </TouchableOpacity>
     </View>
@@ -336,7 +364,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 25,
+    paddingHorizontal: 25
   },
   brand: {
     position: 'absolute',
@@ -348,18 +376,18 @@ const styles = StyleSheet.create({
   contentWrapper: {
     justifyContent: 'center',
     flexGrow: 1,
-    marginTop: 60,
+    marginTop: 60
   },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
+  title: { 
+    fontSize: 26, 
+    fontWeight: 'bold', 
+    textAlign: 'center', 
+    marginBottom: 8 
   },
-  subtext: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 30,
+  subtext: { 
+    fontSize: 14, 
+    textAlign: 'center', 
+    marginBottom: 30 
   },
   formCard: {
     borderWidth: 1,
@@ -370,46 +398,46 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
   },
-  input: {
-    borderRadius: 50,
-    marginBottom: 15,
+  input: { 
+    borderRadius: 50, 
+    marginBottom: 15 
   },
-  passwordHint: {
-    fontSize: 12,
-    marginTop: -10,
-    marginLeft: 15,
-    marginBottom: 8,
+  passwordHint: { 
+    fontSize: 12, 
+    marginTop: -10, 
+    marginLeft: 15, 
+    marginBottom: 8 
   },
-  button: {
-    paddingVertical: 16,
-    borderRadius: 50,
-    alignItems: 'center',
-    marginTop: 10,
+  button: { 
+    paddingVertical: 16, 
+    borderRadius: 50, 
+    alignItems: 'center', 
+    marginTop: 10 
   },
-  buttonText: {
-    fontWeight: '700',
-    fontSize: 16,
+  buttonText: { 
+    fontWeight: '700', 
+    fontSize: 16 
   },
-  error: {
-    fontSize: 13,
-    marginBottom: 10,
-    textAlign: 'center',
+  error: { 
+    fontSize: 13, 
+    marginBottom: 10, 
+    textAlign: 'center' 
   },
-  switchContainer: {
-    alignItems: 'center',
-    marginTop: 20,
+  switchContainer: { 
+    alignItems: 'center', 
+    marginTop: 20 
   },
-  switchText: {
-    fontSize: 14,
+  switchText: { 
+    fontSize: 14 
   },
-  linkText: {
-    fontWeight: '600',
+  linkText: { 
+    fontWeight: '600' 
   },
-  skipButton: {
-    alignSelf: 'center',
-    marginTop: 25,
+  skipButton: { 
+    alignSelf: 'center', 
+    marginTop: 25 
   },
-  skipText: {
-    fontSize: 13,
+  skipText: { 
+    fontSize: 13 
   },
 });
