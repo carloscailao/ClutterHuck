@@ -24,8 +24,10 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install
 
-      - name: Build Expo web
-        run: npx expo export:web
+      - name: Start Expo web in background
+        run: |
+          npx expo start --web --no-interactive --port 8081 &
+          sleep 20
 
       - name: Serve Expo web
         run: npx serve web-build -l 8081 &    
