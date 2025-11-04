@@ -24,13 +24,17 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install
 
-      - name: Start Expo web in background
-        run: |
-          EXPO_NO_INTERACTIVE=1 CI=true npx expo start --web --no-dev --minify &
-          npx wait-on http://localhost:8081
+      - name: Build Expo web
+        run: npx expo export:web --output-dir web-build
+
+      - name: Serve web build
+        run: npx http-server web-build -p 8081 &
+        
+      - name: Wait for server
+        run: npx wait-on http://localhost:8081
 
       - name: Run Playwright tests
-        run: npx playwright test --reporter=html
+        run: npx playwright test
 
       - name: Upload Playwright report
         if: always()
