@@ -34,7 +34,7 @@ jobs:
         env:
           EXPO_PUBLIC_SUPABASE_URL: 'https://wsfcoillswquclqzbjkf.supabase.co'
           EXPO_PUBLIC_SUPABASE_KEY: 'sb_publishable_NOA7ZKEendzjfP1UEd4AAQ_mLRcfP3h'
-        run: npx http-server web-build -p 8081 &
+        run: npx http-server dist -p 8081 &
 
       - name: Wait for server
         run: npx wait-on http://localhost:8081
