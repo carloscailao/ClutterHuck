@@ -6,7 +6,7 @@ export default defineConfig({
   retries: 1,
   reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
   use: {
-    baseURL: 'http://localhost:8081',
+    baseURL: 'http://localhost:8081', 
     headless: true,
   },
   projects: [
@@ -15,9 +15,4 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: 'npm run web',
-    url: 'http://localhost:8081',
-    reuseExistingServer: !process.env.CI,
-  },
 });
