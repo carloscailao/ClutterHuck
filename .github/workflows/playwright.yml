@@ -5,31 +5,28 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile-app
 
     steps:
-      # Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # Install Playwright browsers
       - name: Install Playwright browsers
         run: npx playwright install
 
-      # Run Playwright tests with HTML report
       - name: Run Playwright tests
         run: npx playwright test --reporter=html
 
-      # Upload Playwright HTML report
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
