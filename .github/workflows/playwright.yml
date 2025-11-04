@@ -26,14 +26,10 @@ jobs:
 
       - name: Start Expo web in background
         run: |
-          npx expo start --web --no-interactive --port 8081 &
-          sleep 20
-
-      - name: Serve Expo web
-        run: npx serve web-build -l 8081 &    
+          npx expo start --web 
 
       - name: Run Playwright tests
-        run: npx playwright test --reporter=html
+        run: npx playwright test
 
       - name: Upload Playwright report
         if: always()
