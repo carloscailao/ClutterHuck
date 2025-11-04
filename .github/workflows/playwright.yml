@@ -25,6 +25,9 @@ jobs:
         run: npx playwright install
 
       - name: Build Expo web
+        env:
+          SUPABASE_URL: 'https://wsfcoillswquclqzbjkf.supabase.co'
+          SUPABASE_ANON_KEY: 'sb_publishable_NOA7ZKEendzjfP1UEd4AAQ_mLRcfP3h'
         run: npx expo export --platform web
 
       - name: Serve web build
