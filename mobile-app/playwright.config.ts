@@ -4,6 +4,7 @@ export default defineConfig({
   testDir: './tests',
   timeout: 30 * 1000,
   retries: 1,
+  reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
   use: {
     baseURL: 'http://localhost:8081',
     headless: true,
