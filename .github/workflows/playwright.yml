@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: mobile-app   # folder with package.json
+        working-directory: mobile-app
 
     steps:
       - name: Checkout repository
@@ -26,10 +26,11 @@ jobs:
 
       - name: Start Expo web in background
         run: |
-          npx expo start --web 
+          EXPO_NO_INTERACTIVE=1 CI=true npx expo start --web --no-dev --minify &
+          npx wait-on http://localhost:8081
 
       - name: Run Playwright tests
-        run: npx playwright test
+        run: npx playwright test --reporter=html
 
       - name: Upload Playwright report
         if: always()
