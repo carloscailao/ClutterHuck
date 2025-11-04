@@ -25,11 +25,11 @@ jobs:
         run: npx playwright install
 
       - name: Build Expo web
-        run: npx expo export:web --output-dir web-build
+        run: npx expo export --platform web
 
       - name: Serve web build
-        run: npx http-server web-build -p 8081 &
-        
+        run: npx http-server dist -p 8081 &
+
       - name: Wait for server
         run: npx wait-on http://localhost:8081
 
