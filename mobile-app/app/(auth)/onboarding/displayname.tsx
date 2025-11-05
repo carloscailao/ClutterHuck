@@ -21,11 +21,12 @@ export default function DisplayNameStep() {
     setStatus('saving');
     
     try {
+        // MOCK API CALL: Replace with updateDisplayName(userId, displayName.trim()) when integrating Supabase
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         console.log(`Frontend Mock Save: Display Name "${displayName.trim()}" set.`);
 
-        router.push('/(auth)/onboarding/space'); 
+        router.push('/(auth)/onboarding/avatar'); 
 
     } catch (e) {
         Alert.alert('Transition Error', 'Failed to navigate to the next step.');
@@ -45,12 +46,28 @@ export default function DisplayNameStep() {
         This display name will be visible to others in ClutterHuck.
       </Text>
 
-      <View style={[styles.inputWrapper, { borderColor: colors.border, ...Platform.select({ web: { maxWidth: 400, alignSelf: 'center' } }) }]}>
+      {/* INPUT FIELD WITH VISIBILITY ADJUSTMENTS */}
+      <View style={[
+          styles.inputWrapper, 
+          { 
+              borderColor: colors.border, 
+              // Add a slight background color to ensure the field area is visible
+              backgroundColor: dark ? colors.text + '10' : colors.text + '05', 
+              ...Platform.select({ web: { maxWidth: 400, alignSelf: 'center' } }) 
+          }
+      ]}>
         <TextInput
           placeholder="Enter your display name"
           value={displayName}
           onChangeText={setDisplayName}
-          style={[styles.input, { color: colors.text }]}
+          style={[
+              styles.input, 
+              { 
+                  color: colors.text,
+                  // Ensure a minimum height if padding fails
+                  minHeight: 20 
+              }
+          ]}
           placeholderTextColor={colors.text + '80'}
           autoCapitalize="words" 
           autoCorrect={false}
@@ -113,6 +130,7 @@ const styles = StyleSheet.create({
   input: {
     fontSize: 16,
     paddingVertical: 14,
+    height: 50, 
   },
   button: {
     alignSelf: 'center',

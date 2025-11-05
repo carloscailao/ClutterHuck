@@ -3,7 +3,7 @@ import { View, StyleSheet, Animated } from 'react-native';
 import { Stack, useSegments } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 
-const steps = ['username', 'displayname', 'space', 'donations', 'privacy'];
+const steps = ['username', 'displayname', 'avatar'];
 
 export default function OnboardingLayout() {
   const { colors } = useTheme();
