@@ -114,7 +114,7 @@ export default function OtpVerificationScreen() {
 
       if (data.session) {
         Alert.alert('Verified!', 'Your account has been confirmed.');
-        router.replace('/(auth)/onboarding/username');
+        router.replace('/(auth)/name/page');
       }
     } catch (err) {
       setErrorMessage('Something went wrong verifying your OTP.');
