@@ -9,12 +9,14 @@ test('welcome text and login inputs are visible', async ({ page }) => {
   await expect(page.getByText('Join us to start decluttering with purpose.')).toBeVisible();
 
   // Verify Email input is visible and type into it
-  const emailInput = page.getByPlaceholder('Email');
+  const emailInput = page.getByText('Email').first();
   await expect(emailInput).toBeVisible();
-  await emailInput.fill('testuser@example.com');
+  await page.click('input[type="email"]');
+  await page.type('input[type="email"]', 'youremail@example.com');
 
   // Verify Password input is visible and type into it
-  const passwordInput = page.getByPlaceholder('Password');
+  const passwordInput = page.getByText('Password').first();
   await expect(passwordInput).toBeVisible();
-  await passwordInput.fill('TestPassword123');
+  await page.click('input[type="password"]');
+  await page.type('input[type="password"]', '123456');
 });

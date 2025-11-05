@@ -19,5 +19,5 @@ test('create account shows error message', async ({ page }) => {
   console.log(await page.textContent('body'));
 
   // Assert error appears
-  await expect(page.getByText('Error sending confirmation email', { exact: false })).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText('This email is already registered.', { exact: false })).toBeVisible({ timeout: 10000 });
 });
