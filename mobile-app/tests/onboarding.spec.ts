@@ -6,6 +6,9 @@ test('skip to onboarding', async ({ page }) => {
   // Skip to Onboarding
   await page.getByText('Skip to Onboarding (Sample)').click();
 
+  // Wait for UI to update
+  await page.waitForTimeout(10000);
+
   // enter username
   await page.click('input[placeholder*="username"]');  
   await page.type('input[placeholder*="username"]', 'JohnDoe');
