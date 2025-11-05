@@ -27,7 +27,7 @@ export default function UsernameStep() {
 
   const handleNext = () => {
     if (status === 'available') {
-      router.push('/(auth)/onboarding/space');
+      router.push('/(auth)/onboarding/displayname');
     }
   };
 
