@@ -39,4 +39,7 @@ test('onboarding + verify main routes', async ({ page }) => {
   await page.waitForTimeout(3000);
   await page.getByRole('tab', { name: '  Home' }).click();
   await expect(page.getByText('Responsible Decluttering for', { exact: false })).toBeVisible();
+
+  await page.waitForTimeout(10000); // waits 10 seconds
 });
+

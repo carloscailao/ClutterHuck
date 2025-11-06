@@ -26,7 +26,7 @@ export default function DisplayNameStep() {
         
         console.log(`Frontend Mock Save: Display Name "${displayName.trim()}" set.`);
 
-        router.push('/(auth)/onboarding/avatar'); 
+       router.replace('/(tabs)');
 
     } catch (e) {
         Alert.alert('Transition Error', 'Failed to navigate to the next step.');
