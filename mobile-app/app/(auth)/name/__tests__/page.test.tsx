@@ -27,7 +27,7 @@ import NamePage from '@/app/(auth)/name/page';
 import { router } from 'expo-router';
 
 describe('NamePage', () => {
-  it('next button enabled when user inputs first name, last name, and a unique username (3–20 chars)', async () => {
+  it('enables Next button when user inputs first name, last name, and a unique username (3–20 chars)', async () => {
     // supabase functions
     const { getCurrentUser, getProfileByUid, upsertProfile, supabase } = require('@/lib/supabaseClient');
 
@@ -62,10 +62,9 @@ describe('NamePage', () => {
       const isDisabled = nextButton.props.accessibilityState?.disabled;
       expect(isDisabled).not.toBe(true);
     });
-    expect(nextButton).toBeTruthy();
   });
 
-  it('next button enabled when user inputs first name, last name, and a unique username with 3-20 characters', async () => {
+  it('routes to Set Avatar page when Next button is enabled', async () => {
     // supabase functions
     const { getCurrentUser, getProfileByUid, upsertProfile, supabase } = require('@/lib/supabaseClient');
 
@@ -100,7 +99,6 @@ describe('NamePage', () => {
       const isDisabled = nextButton.props.accessibilityState?.disabled;
       expect(isDisabled).not.toBe(true);
     });
-    expect(nextButton).toBeTruthy();
 
     // button press event
     fireEvent.press(nextButton);
@@ -161,11 +159,6 @@ describe('NamePage', () => {
     fireEvent.changeText(lastNameInput, ''); // clear last name
     fireEvent.changeText(usernameInput, 'johndoe');
 
-    // advance timer for username debounce
-    act(() => {
-      jest.advanceTimersByTime(500);
-    });
-
     await waitFor(() => {
       const isDisabled = nextButton.props.accessibilityState?.disabled;
       expect(isDisabled).toBe(true);
@@ -187,8 +180,8 @@ describe('NamePage', () => {
     });
   });
 
-  it('next button disabled with an error message with inputs fewer than 3 characters for the username', async () => {
-    const { getCurrentUser, getProfileByUid, supabase } = require('@/lib/supabaseClient');
+  it('disables Next button with an error message with inputs fewer than 3 characters for the username', async () => {
+    const { getCurrentUser, getProfileByUid } = require('@/lib/supabaseClient');
 
     getCurrentUser.mockResolvedValue({ data: { user: { id: 'uid123', email: 'a@b.com' } }, error: null });
     getProfileByUid.mockResolvedValue({ data: null, error: { message: 'Result contains no rows' } });
@@ -206,7 +199,6 @@ describe('NamePage', () => {
       const isDisabled = nextButton.props.accessibilityState?.disabled;
       expect(isDisabled).toBe(true);
     });
-    expect(nextButton).toBeTruthy();
 
     // Case 2: Only first name filled
     fireEvent.changeText(screen.getByTestId('firstNameInput'), 'John');
@@ -214,7 +206,6 @@ describe('NamePage', () => {
       const isDisabled = nextButton.props.accessibilityState?.disabled;
       expect(isDisabled).toBe(true);
     });
-    expect(nextButton).toBeTruthy();
 
     // Case 3: First + Last filled, username blank
     fireEvent.changeText(screen.getByTestId('lastNameInput'), 'Doe');
@@ -222,7 +213,6 @@ describe('NamePage', () => {
       const isDisabled = nextButton.props.accessibilityState?.disabled;
       expect(isDisabled).toBe(true);
     });
-    expect(nextButton).toBeTruthy();
 
     // Case 4: All filled but username too short (less than 3 characters)
     fireEvent.changeText(screen.getByTestId('usernameInput'), 'jo');
@@ -230,7 +220,6 @@ describe('NamePage', () => {
       const isDisabled = nextButton.props.accessibilityState?.disabled;
       expect(isDisabled).toBe(true);
     });
-    expect(nextButton).toBeTruthy();
 
     expect(screen.getByText('Username must be 3–20 chars: letters, numbers, _, -, .')).toBeTruthy();
 
@@ -247,10 +236,9 @@ describe('NamePage', () => {
       const isDisabled = nextButton.props.accessibilityState?.disabled;
       expect(isDisabled).not.toBe(true);
     });
-    expect(nextButton).toBeTruthy();
   });
 
-  it('next button disabled when user inpurs more than 20 characters for the username', async () => {
+  it('disables Next button when user inpurs more than 20 characters for the username', async () => {
     const { getCurrentUser, getProfileByUid, supabase } = require('@/lib/supabaseClient');
 
     getCurrentUser.mockResolvedValue({ data: { user: { id: 'uid123', email: 'a@b.com' } }, error: null });
@@ -282,13 +270,12 @@ describe('NamePage', () => {
       const isDisabled = nextButton.props.accessibilityState?.disabled;
       expect(isDisabled).toBe(true);
     });
-    expect(nextButton).toBeTruthy();
     
     // check error message
     expect(screen.getByText('Username must be 3–20 chars: letters, numbers, _, -, .')).toBeTruthy();
   });
 
-  it('next button disabled when user inputs already registered username', async () => {
+  it('disables Next button when user inputs already registered username', async () => {
     const { getCurrentUser, getProfileByUid, upsertProfile, supabase } = require('@/lib/supabaseClient');
 
     getCurrentUser.mockResolvedValue({ data: { user: { id: 'uid123', email: 'a@b.com' } }, error: null });
@@ -332,7 +319,6 @@ describe('NamePage', () => {
       const isDisabled = nextButton.props.accessibilityState?.disabled;
       expect(isDisabled).toBe(true);
     });
-    expect(nextButton).toBeTruthy();
 
     // check for error text
     expect(screen.getByText('Username is already taken.')).toBeTruthy();
