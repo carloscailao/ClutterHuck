@@ -115,4 +115,48 @@ describe('RegisterPage - Create Account Button', () => {
       });
     }, { timeout: 3000 });
   });
+
+  test('Sign Up button is disabled when user leaves input fields blank', async () => {
+    render(<RegisterPage />);
+
+    // Find the actual TouchableOpacity button using testID
+    const createButton = screen.getByTestId('create-account-button');
+    
+    // Check that button is disabled (has reduced opacity)
+    expect(createButton.props.style).toEqual(
+      expect.objectContaining({
+        opacity: 0.4
+      })
+    );
+
+    // Test with only email filled
+    const allEmptyInputs = screen.getAllByDisplayValue('');
+    const emailInput = allEmptyInputs[0];
+    
+    await act(async () => {
+      fireEvent.changeText(emailInput, 'test@example.com');
+    });
+
+    // Button should still be disabled (password is empty)
+    expect(createButton.props.style).toEqual(
+      expect.objectContaining({
+        opacity: 0.4
+      })
+    );
+
+    // Test with only password filled (clear email first)
+    const passwordInput = allEmptyInputs[1];
+    
+    await act(async () => {
+      fireEvent.changeText(emailInput, ''); // Clear email
+      fireEvent.changeText(passwordInput, 'password123');
+    });
+
+    // Button should still be disabled (email is empty)
+    expect(createButton.props.style).toEqual(
+      expect.objectContaining({
+        opacity: 0.4
+      })
+    );
+  });
 });
