@@ -159,4 +159,53 @@ describe('RegisterPage - Create Account Button', () => {
       })
     );
   });
+
+  test('Sign Up button is disabled when user inputs invalid email format', async () => {
+    render(<RegisterPage />);
+
+    // Get inputs
+    const allEmptyInputs = screen.getAllByDisplayValue('');
+    const emailInput = allEmptyInputs[0];
+    const passwordInput = allEmptyInputs[1];
+
+    // Enter invalid email (doesn't end in .com) and valid password
+    await act(async () => {
+      fireEvent.changeText(emailInput, 'invalid@email');
+      fireEvent.changeText(passwordInput, 'validpassword123');
+    });
+
+    // Find the button
+    const createButton = screen.getByTestId('create-account-button');
+    
+    // Check that button is disabled (has reduced opacity)
+    expect(createButton.props.style).toEqual(
+      expect.objectContaining({
+        opacity: 0.4
+      })
+    );
+
+    // Test with email that doesn't have proper domain extension
+    await act(async () => {
+      fireEvent.changeText(emailInput, 'user@domain.co');
+    });
+
+    // Button should still be disabled (invalid email format)
+    expect(createButton.props.style).toEqual(
+      expect.objectContaining({
+        opacity: 0.4
+      })
+    );
+
+    // Test with completely invalid email format
+    await act(async () => {
+      fireEvent.changeText(emailInput, 'notanemail');
+    });
+
+    // Button should still be disabled
+    expect(createButton.props.style).toEqual(
+      expect.objectContaining({
+        opacity: 0.4
+      })
+    );
+  });
 });
