@@ -1,4 +1,4 @@
-// app/(auth)/layout.tsx
+// app/(auth)/_layout.tsx
 import React from "react";
 import { Slot } from "expo-router";
 import { View, StyleSheet } from "react-native";

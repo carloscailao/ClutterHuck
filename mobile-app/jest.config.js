@@ -13,4 +13,7 @@ module.exports = {
     '!**/__tests__/**',
     '!**/node_modules/**',
   ],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/$1',
+  },
 };
