@@ -29,40 +29,72 @@ jest.mock('@react-navigation/native', () => ({
   }),
 }));
 
-// Mock Supabase for successful signup
-jest.mock('@/lib/supabaseClient', () => ({
-  supabase: {
+// Create mock functions that will be accessible throughout the test
+let mockSignUp: jest.Mock;
+let mockSingle: jest.Mock;
+
+// Mock the entire supabaseClient module - create all mocks inside the factory
+jest.mock('@/lib/supabaseClient', () => {
+  mockSignUp = jest.fn();
+  const mockSignInWithPassword = jest.fn();
+  const mockGetUser = jest.fn();
+  mockSingle = jest.fn();
+  const mockSelect = jest.fn(() => ({ single: mockSingle }));
+  const mockInsert = jest.fn(() => ({ select: mockSelect }));
+  const mockEq = jest.fn(() => ({ single: mockSingle }));
+  const mockSelectForQuery = jest.fn(() => ({ eq: mockEq }));
+  const mockUpsert = jest.fn(() => ({ select: mockSelect }));
+  const mockFrom = jest.fn(() => ({
+    insert: mockInsert,
+    select: mockSelectForQuery,
+    upsert: mockUpsert,
+  }));
+
+  const mockSupabase = {
     auth: {
-      signUp: jest.fn().mockResolvedValue({
-        data: { user: { id: 'user123' } },
-        error: null,
-      }),
+      signUp: mockSignUp,
+      signInWithPassword: mockSignInWithPassword,
+      getUser: mockGetUser,
     },
-    from: jest.fn(() => ({
-      insert: jest.fn().mockReturnThis(),
-      select: jest.fn().mockReturnThis(),
-      single: jest.fn().mockResolvedValue({
-        data: { id: 'profile123' },
-        error: null,
-      }),
-    })),
-  },
-}));
+    from: mockFrom,
+  };
+
+  return {
+    supabase: mockSupabase,
+    getCurrentUser: jest.fn(),
+    getProfileByUid: jest.fn(),
+    upsertProfile: jest.fn(),
+  };
+});
 
 // Mock Alert
 jest.spyOn(Alert, 'alert');
 
-// Import component after mocks - Fix the import path
+// Import component after mocks
 import RegisterPage from '@/app/(auth)/register/page';
-// Import the mocked router to access mockPush
 import { router } from 'expo-router';
 
-// Get access to the mock function
+// Get access to the mock functions
 const mockRouter = router as jest.Mocked<typeof router>;
 
 describe('RegisterPage - Create Account Button', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Set up default successful signup mock
+    mockSignUp.mockResolvedValue({
+      data: { 
+        user: { id: 'user123' },
+        session: null 
+      },
+      error: null,
+    });
+
+    // Set up default successful profile creation mock
+    mockSingle.mockResolvedValue({
+      data: { id: 'profile123', auth_uid: 'user123' },
+      error: null,
+    });
   });
 
   test('Create Account button is enabled when user inputs valid email and password', async () => {
@@ -209,7 +241,7 @@ describe('RegisterPage - Create Account Button', () => {
     );
   });
 
-    test('Sign Up button shows error message when user inputs invalid password', async () => {
+  test('Sign Up button shows error message when user inputs invalid password', async () => {
     render(<RegisterPage />);
 
     // Get inputs
@@ -231,5 +263,40 @@ describe('RegisterPage - Create Account Button', () => {
     // Check that button is still disabled
     const createButton = screen.getByTestId('create-account-button');
     expect(createButton.props.style.opacity).toBe(0.4);
+  });
+
+    test('Shows error message when signup fails with already registered email', async () => {
+    // Mock Supabase to return "already registered" error
+    mockSignUp.mockResolvedValueOnce({
+      data: { user: null, session: null },
+      error: { message: 'User already registered' },
+    });
+
+    render(<RegisterPage />);
+
+    // Get inputs
+    const inputs = screen.getAllByDisplayValue('');
+    const emailInput = inputs[0];
+    const passwordInput = inputs[1];
+
+    // Fill the form
+    await act(async () => {
+      fireEvent.changeText(emailInput, 'test@example.com');
+      fireEvent.changeText(passwordInput, 'password123');
+    });
+
+    // Find and press the button (by text, which should always work)
+    const signUpButton = screen.getByText('Create Account');
+    await act(async () => {
+      fireEvent.press(signUpButton);
+    });
+
+    // The main assertion - error message should appear
+    await waitFor(() => {
+      expect(screen.getByText('This email is already registered.')).toBeTruthy();
+    });
+
+    // Verify no navigation
+    expect(mockRouter.push).not.toHaveBeenCalled();
   });
 });
