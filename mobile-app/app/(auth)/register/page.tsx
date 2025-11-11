@@ -220,6 +220,7 @@ export default function RegisterPage() {
               activeOpacity={0.8}
               disabled={isDisabled || loading}
               style={[styles.button, { backgroundColor: buttonBg, opacity: isDisabled ? 0.4 : 1 }]}
+              testID="create-account-button" // Add this line
             >
               <Text style={[styles.buttonText, { color: isDisabled ? fadedText : buttonTextColor }]}>
                 {loading ? 'Loading...' : isSignUp ? 'Create Account' : 'Log In'}
