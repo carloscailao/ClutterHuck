@@ -12,7 +12,7 @@ import {
 import { useTheme } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -82,21 +82,24 @@ export default function SetProfilePicture() {
             if (!fileInfo.exists) throw new Error('File not found');
             let fileSize = fileInfo.size ?? 0;
 
-            // Compress large images
+            // Compress if too large
             if (fileSize > MAX_FILE_SIZE) {
                 let quality = 0.9;
                 let width = 1024;
+
                 for (let i = 0; i < 5; i++) {
                     const manipResult = await ImageManipulator.manipulateAsync(
                         finalUri,
                         [{ resize: { width } }],
                         { compress: quality, format: ImageManipulator.SaveFormat.JPEG }
                     );
+
                     const newFileInfo = await FileSystem.getInfoAsync(manipResult.uri);
                     if (newFileInfo.exists && (newFileInfo.size ?? 0) <= MAX_FILE_SIZE) {
                         finalUri = manipResult.uri;
                         break;
                     }
+
                     quality = Math.max(quality - 0.2, 0.1);
                     width = Math.floor(width * 0.8);
                 }
@@ -104,19 +107,39 @@ export default function SetProfilePicture() {
 
             setUploading(true);
 
-            const fileExt = 'jpg';
+            const fileExt = finalUri.split('.').pop()?.toLowerCase() || 'jpg';;
             const fileName = `${userId ?? 'unknown'}-${Date.now()}.${fileExt}`;
             const filePath = `avatars/${fileName}`;
 
-            const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('avatars')
-                .upload(filePath, {
-                    uri: finalUri,
-                    type: `image/${fileExt}`,
-                    name: fileName,
-                } as any);
+            // Create FormData for React Native
+            const formData = new FormData();
+            formData.append('file', {
+                uri: pickedImage.uri,
+                type: `image/${fileExt}`,
+                name: fileName,
+            } as any);
 
-            if (uploadError) throw uploadError;
+            // Upload using fetch with FormData
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                throw new Error('No active session');
+            }
+
+            const uploadResponse = await fetch(
+                `${process.env.EXPO_PUBLIC_SUPABASE_URL}/storage/v1/object/avatars/${filePath}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session.access_token}`,
+                    },
+                    body: formData,
+                }
+            );
+
+            if (!uploadResponse.ok) {
+                const error = await uploadResponse.json();
+                throw new Error(error.message || 'Upload failed');
+            }
 
             const { data: publicUrlData } = supabase.storage
                 .from('avatars')
@@ -125,14 +148,18 @@ export default function SetProfilePicture() {
             const publicUrl = publicUrlData?.publicUrl ?? null;
             if (!publicUrl) throw new Error('No public URL returned');
 
-            const { error: updateError } = await supabase
-                .from('profiles')
-                .update({ avatar_url: publicUrl })
-                .eq('auth_uid', userId);
+            if (userId) {
+                const { error: updateError } = await supabase
+                    .from('profiles')
+                    .update({ avatar_url: publicUrl })
+                    .eq('auth_uid', userId);
 
-            if (updateError) throw updateError;
+                if (updateError) {
+                    throw updateError;
+                }
+            }
 
-            setAvatarUrl(publicUrl);
+            setAvatarUrl(`${publicUrl}?t=${Date.now()}`);
             Alert.alert('Success', 'Profile picture uploaded successfully!');
         } catch (error: any) {
             Alert.alert('Error', error.message || 'Failed to upload image');

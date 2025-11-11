@@ -5,9 +5,14 @@ import { supabase } from '@/lib/supabaseClient';
 import { Alert } from 'react-native';
 import {useRouter} from "expo-router";
 
-
-
 // Mocks
+process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+
+global.fetch = jest.fn(async () => ({
+    ok: true,
+    json: async () => ({}),
+}));
+
 jest.mock('expo-image-picker', () => ({
     launchImageLibraryAsync: jest.fn(),
     requestMediaLibraryPermissionsAsync: jest.fn(),
@@ -17,27 +22,42 @@ jest.mock('expo-image-manipulator', () => ({
     manipulateAsync: jest.fn(),
 }));
 
-const replaceMock = jest.fn();
+const mockReplace = jest.fn();
 
 jest.mock('expo-router', () => ({
-    useRouter: () => ({ replace: jest.fn() }),
+    useRouter: () => ({ replace: mockReplace }),
 }));
 
 jest.mock('@/lib/supabaseClient', () => ({
     supabase: {
         auth: {
-            getUser: jest.fn(),
-            getSession: jest.fn(),
+            getUser: jest.fn(async () => ({
+                data: { user: { id: 'mock-user-id' } },
+                error: null,
+            })),
+            getSession: jest.fn(async () => ({
+                data: { session: { access_token: 'mock-access-token' } },
+                error: null,
+            })),
         },
-        from: jest.fn(),
         storage: {
             from: jest.fn(() => ({
-                upload: jest.fn().mockResolvedValue({ data: {}, error: null }),
                 getPublicUrl: jest.fn(() => ({
-                    data: { publicUrl: 'https://fakeurl.com/avatar.jpg' },
+                    data: { publicUrl: 'https://example.com/mock-avatar.jpg' },
                 })),
             })),
         },
+        from: jest.fn(() => ({
+            update: jest.fn(async () => ({ error: null })),
+            select: jest.fn(() => ({
+                eq: jest.fn(() => ({
+                    single: jest.fn(async () => ({
+                        data: { avatar_url: 'https://example.com/old-avatar.jpg' },
+                        error: null,
+                    })),
+                })),
+            })),
+        })),
     },
 }));
 
@@ -45,6 +65,12 @@ jest.mock('@react-navigation/native', () => ({
     useTheme: () => ({ colors: { background: '#fff', text: '#000' }, dark: false }),
 }));
 
+jest.mock('expo-file-system/legacy', () => ({
+    getInfoAsync: jest.fn(async () => ({
+        exists: true,
+        size: 1024 * 500,
+    })),
+}));
 
 // Setup before each test
 const ImagePicker = require('expo-image-picker');
@@ -125,7 +151,7 @@ describe('SetProfilePicture', () => {
     });
 
     beforeEach(() => {
-        replaceMock.mockClear();
+        mockReplace.mockClear();
     });
 
     it('navigates to tabs when Skip is pressed', async () => {
@@ -135,7 +161,7 @@ describe('SetProfilePicture', () => {
         fireEvent.press(skipButton);
 
         await waitFor(() => {
-            expect(replaceMock).toHaveBeenCalledWith('/(tabs)');
+            expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
         });
     });
 });
