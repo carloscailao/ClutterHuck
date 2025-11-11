@@ -182,6 +182,7 @@ export default function NamePage() {
       <View style={styles.form}>
         <TextInput
           label="First name"
+          testID='firstNameInput'
           value={firstName}
           onChangeText={setFirstName}
           mode="outlined"
@@ -195,6 +196,7 @@ export default function NamePage() {
 
         <TextInput
           label="Last name"
+          testID='lastNameInput'
           value={lastName}
           onChangeText={setLastName}
           mode="outlined"
@@ -208,6 +210,7 @@ export default function NamePage() {
 
         <TextInput
           label="Username"
+          testID='usernameInput'
           value={username}
           onChangeText={setUsername}
           mode="outlined"
@@ -216,11 +219,15 @@ export default function NamePage() {
           outlineColor={dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}
           right={usernameChecking ? <TextInput.Icon icon={() => <ActivityIndicator animating size={16} color={colors.text} />} /> : null}
         />
-        <Text style={[styles.hint, { color: usernameError ? '#cc0000' : colors.text + '99' }]}>
+        <Text 
+          testID='usernameCheckLabel'
+          style={[styles.hint, { color: usernameError ? '#cc0000' : colors.text + '99' }]}
+        >
           {usernameError ?? 'Unique username. Editable after registration.'}
         </Text>
 
         <TouchableOpacity
+          testID='nextButton'
           onPress={handleNext}
           disabled={!isFormValid || loading}
           style={[
