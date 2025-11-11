@@ -1,13 +1,21 @@
 import React from 'react';
-import { render, fireEvent, screen, act } from '@testing-library/react-native';
+import { render, fireEvent, screen, act, waitFor } from '@testing-library/react-native';
+import { Alert } from 'react-native';
 
-// Mock expo-router
-jest.mock('expo-router', () => ({
-  router: {
-    push: jest.fn(),
-    replace: jest.fn(),
-  },
-}));
+// Mock expo-router - define mockPush inside the mock factory
+jest.mock('expo-router', () => {
+  const mockPush = jest.fn();
+  return {
+    router: {
+      push: mockPush,
+      replace: jest.fn(),
+    },
+    useRouter: () => ({
+      push: mockPush,
+      replace: jest.fn(),
+    }),
+  };
+});
 
 // Mock react-navigation theme
 jest.mock('@react-navigation/native', () => ({
@@ -21,10 +29,42 @@ jest.mock('@react-navigation/native', () => ({
   }),
 }));
 
+// Mock Supabase for successful signup
+jest.mock('@/lib/supabaseClient', () => ({
+  supabase: {
+    auth: {
+      signUp: jest.fn().mockResolvedValue({
+        data: { user: { id: 'user123' } },
+        error: null,
+      }),
+    },
+    from: jest.fn(() => ({
+      insert: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({
+        data: { id: 'profile123' },
+        error: null,
+      }),
+    })),
+  },
+}));
+
+// Mock Alert
+jest.spyOn(Alert, 'alert');
+
 // Import component after mocks
 import RegisterPage from '../page';
+// Import the mocked router to access mockPush
+import { router } from 'expo-router';
+
+// Get access to the mock function
+const mockRouter = router as jest.Mocked<typeof router>;
 
 describe('RegisterPage - Create Account Button', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   test('Create Account button is enabled when user inputs valid email and password', async () => {
     render(<RegisterPage />);
 
@@ -44,5 +84,35 @@ describe('RegisterPage - Create Account Button', () => {
     
     // Check that button exists and is rendered
     expect(createButton).toBeTruthy();
+  });
+
+  test('Routes to name page when user successfully creates account', async () => {
+    render(<RegisterPage />);
+
+    // Get inputs
+    const allEmptyInputs = screen.getAllByDisplayValue('');
+    const emailInput = allEmptyInputs[0];
+    const passwordInput = allEmptyInputs[1];
+
+    // Enter valid credentials
+    await act(async () => {
+      fireEvent.changeText(emailInput, 'newuser@example.com');
+      fireEvent.changeText(passwordInput, 'validpassword123');
+    });
+
+    // Press the Create Account button
+    const createButton = screen.getByText('Create Account');
+    
+    await act(async () => {
+      fireEvent.press(createButton);
+    });
+
+    // Wait for navigation to be called
+    await waitFor(() => {
+      expect(mockRouter.push).toHaveBeenCalledWith({
+        pathname: '/(auth)/name/page',
+        params: { email: 'newuser@example.com' }
+      });
+    }, { timeout: 3000 });
   });
 });
