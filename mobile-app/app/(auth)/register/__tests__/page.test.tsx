@@ -52,8 +52,8 @@ jest.mock('@/lib/supabaseClient', () => ({
 // Mock Alert
 jest.spyOn(Alert, 'alert');
 
-// Import component after mocks
-import RegisterPage from '../page';
+// Import component after mocks - Fix the import path
+import RegisterPage from '@/app/(auth)/register/page';
 // Import the mocked router to access mockPush
 import { router } from 'expo-router';
 
@@ -207,5 +207,29 @@ describe('RegisterPage - Create Account Button', () => {
         opacity: 0.4
       })
     );
+  });
+
+    test('Sign Up button shows error message when user inputs invalid password', async () => {
+    render(<RegisterPage />);
+
+    // Get inputs
+    const allEmptyInputs = screen.getAllByDisplayValue('');
+    const emailInput = allEmptyInputs[0];
+    const passwordInput = allEmptyInputs[1];
+
+    // Enter valid email and invalid password
+    await act(async () => {
+      fireEvent.changeText(emailInput, 'valid@example.com');
+      fireEvent.changeText(passwordInput, '123'); // Only 3 characters
+    });
+
+    // Check that error message appears
+    await waitFor(() => {
+      expect(screen.getByText('Password must be at least 6 characters long.')).toBeTruthy();
+    });
+
+    // Check that button is still disabled
+    const createButton = screen.getByTestId('create-account-button');
+    expect(createButton.props.style.opacity).toBe(0.4);
   });
 });
