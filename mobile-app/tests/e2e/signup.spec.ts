@@ -107,7 +107,7 @@ test('Signup fails if email already exists', async ({ page }) => {
   const errorMsg = page.getByText('This email is already registered.', { exact: true });
   await expect(errorMsg).toBeVisible({ timeout: 5000 });
 
-  console.log(`❌ Signup failed as expected: email already registered -> ${email}`);
+  console.log(`Signup failed as expected: email already registered -> ${email}`);
 });
 
 
