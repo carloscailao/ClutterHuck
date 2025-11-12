@@ -15,7 +15,7 @@ function generateUser(prefix = 'test') {
   };
 }
 
-// --- Successful signup ---
+//Successful signup
 test('User can sign up successfully with valid username', async ({ page }) => {
   const user = generateUser();
 
@@ -39,7 +39,7 @@ test('User can sign up successfully with valid username', async ({ page }) => {
   console.log(`Successful signup: ${user.email} / ${user.usernameValid}`);
 });
 
-// --- Username too long ---
+//Username too long
 test('Signup fails with too long username', async ({ page }) => {
   const user = generateUser('long');
 
@@ -63,7 +63,7 @@ test('Signup fails with too long username', async ({ page }) => {
   console.log(`Signup failed as expected (too long username): ${user.usernameLong}`);
 });
 
-// --- Username too short ---
+//Username too short
 test('Signup fails with too short username', async ({ page }) => {
   const user = generateUser('short');
 
@@ -86,7 +86,7 @@ test('Signup fails with too short username', async ({ page }) => {
   console.log(`Signup failed as expected (too short username): ${user.usernameShort}`);
 });
 
-// --- Email already registered ---
+//Email already registered
 test('Signup fails if email already exists', async ({ page }) => {
   const email = 'simondioresambata@gmail.com';
   const password = 'waxdQSCrfv135$!';
@@ -105,7 +105,7 @@ test('Signup fails if email already exists', async ({ page }) => {
   console.log(`Signup failed as expected: email already registered -> ${email}`);
 });
 
-// --- Invalid email format ---
+//Invalid email format
 test('Signup fails with invalid email format', async ({ page }) => {
   const email = 'simondioresambata@gmail'; // invalid
   const password = 'StrongPass123!';
@@ -122,7 +122,7 @@ test('Signup fails with invalid email format', async ({ page }) => {
   console.log(`Signup failed as expected: invalid email -> ${email} (button disabled)`);
 });
 
-// --- Password too short ---
+//Password too short
 test('Signup fails when password is too short', async ({ page }) => {
   const email = 'testshortpass@example.com';
   const password = '123'; // too short

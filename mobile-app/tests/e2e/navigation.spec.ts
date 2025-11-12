@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('User can log in and navigate tabs', async ({ page }) => {
-  // --- LOGIN ---
+  //LOGIN 
   await page.goto('http://localhost:8081/welcome/page');
   await page.getByText('Get Started', { exact: true }).click();
   await page.fill('input[type="email"]', 'simondioresambata@gmail.com');
@@ -10,13 +10,13 @@ test('User can log in and navigate tabs', async ({ page }) => {
   await page.getByText('Log In', { exact: true }).click();
   await page.locator('div').filter({ hasText: /^Log In$/ }).first().click();
 
-  // --- VERIFY LOGIN ---
+  //VERIFY LOGIN
   await expect(page).toHaveURL('http://localhost:8081/', { timeout: 10000 });
   const responsibleText = page.getByText('Responsible Decluttering for a Sustainable Future', { exact: true });
   await expect(responsibleText).toBeVisible({ timeout: 10000 });
   await responsibleText.click();
 
-  // --- NAVIGATE TABS ---
+  //NAVIGATE TABS
   await page.getByRole('tab', { name: 'Listings' }).click();
   await expect(page.getByText('Listings').first()).toBeVisible();
   await expect(page).toHaveURL(/.*listings/);
