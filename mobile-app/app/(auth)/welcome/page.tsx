@@ -53,6 +53,7 @@ export default function WelcomePage() {
           source={require("../../../assets/images/clutterhuck-logo.png")}
           style={styles.image}
           resizeMode="contain"
+          testID =" logo-image"
         />
         <Text style={[styles.headerText, { color: colors.text }]}>Welcome to ClutterHuck</Text>
         <Text style={[styles.subtext, { color: dark ? '#AAAAAA' : '#555555' }]}>
