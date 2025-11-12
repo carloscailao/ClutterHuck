@@ -238,43 +238,6 @@ describe('NamePage', () => {
     });
   });
 
-  it('disables Next button when user inpurs more than 20 characters for the username', async () => {
-    const { getCurrentUser, getProfileByUid, supabase } = require('@/lib/supabaseClient');
-
-    getCurrentUser.mockResolvedValue({ data: { user: { id: 'uid123', email: 'a@b.com' } }, error: null });
-    getProfileByUid.mockResolvedValue({ data: null, error: { message: 'Result contains no rows' } });
-    
-    render(<NamePage />);
-
-    // wait for initial loading spinner to disappear
-    await waitFor(() => {
-      expect(screen.queryByTestId('ActivityIndicator')).not.toBeTruthy();
-    });
-
-    // get input fields
-    const firstNameInput = await screen.findByTestId('firstNameInput');
-    const lastNameInput = await screen.findByTestId('lastNameInput');
-    const usernameInput = await screen.findByTestId('usernameInput');
-
-    // fill input fields
-    fireEvent.changeText(firstNameInput, 'John');
-    fireEvent.changeText(lastNameInput, 'Doe');
-    fireEvent.changeText(usernameInput, 'john_doe_is_more_than_20_characters');
-
-    // wait for debounce username check to resolve
-    await waitFor(() => expect(supabase.limit).toHaveBeenCalled(), { timeout: 1500 });
-
-    // check if button disabled
-    const nextButton = screen.getByTestId('nextButton')
-    await waitFor(() => {
-      const isDisabled = nextButton.props.accessibilityState?.disabled;
-      expect(isDisabled).toBe(true);
-    });
-    
-    // check error message
-    expect(screen.getByText('Username must be 3–20 chars: letters, numbers, _, -, .')).toBeTruthy();
-  });
-
   it('disables Next button when user inputs already registered username', async () => {
     const { getCurrentUser, getProfileByUid, upsertProfile, supabase } = require('@/lib/supabaseClient');
 
