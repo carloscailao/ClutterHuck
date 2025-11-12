@@ -16,7 +16,7 @@ test('User can log in and navigate tabs', async ({ page }) => {
   // --- VERIFY LOGIN ---
   await expect(page).toHaveURL('http://localhost:8081/', { timeout: 10000 });
 
-const responsibleText = page.getByText('Responsible Decluttering for').nth(1);
+const responsibleText = page.getByText('Responsible Decluttering for a Sustainable Future');
 await responsibleText.waitFor({ state: 'visible', timeout: 10000 }); // wait up to 10s
 await responsibleText.click();
   // --- TEST TABS ---
