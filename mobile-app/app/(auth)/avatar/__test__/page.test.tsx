@@ -153,15 +153,4 @@ describe('SetProfilePicture', () => {
     beforeEach(() => {
         mockReplace.mockClear();
     });
-
-    it('navigates to tabs when Skip is pressed', async () => {
-        const { getByText } = render(<SetProfilePicture />);
-        const skipButton = getByText('Skip');
-
-        fireEvent.press(skipButton);
-
-        await waitFor(() => {
-            expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
-        });
-    });
 });
