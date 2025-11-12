@@ -23,7 +23,8 @@ test.describe('Login Flow', () => {
     await expect(page).toHaveURL('http://localhost:8081/', { timeout: 10000 });
 
 
-   page.getByText('Welcome to ClutterHuck', { exact: true }).first();
+   await expect(page.getByText('Welcome to ClutterHuck', { exact: true }).first()).toBeVisible();
+
 
   });
 
