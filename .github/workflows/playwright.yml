@@ -1,0 +1,50 @@
+name: Playwright Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile-app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright browsers
+        run: npx playwright install
+
+      - name: Build Expo web
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: 'https://wsfcoillswquclqzbjkf.supabase.co'
+          EXPO_PUBLIC_SUPABASE_KEY: 'sb_publishable_NOA7ZKEendzjfP1UEd4AAQ_mLRcfP3h'
+        run: npx expo export --platform web
+
+      - name: Serve web build
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: 'https://wsfcoillswquclqzbjkf.supabase.co'
+          EXPO_PUBLIC_SUPABASE_KEY: 'sb_publishable_NOA7ZKEendzjfP1UEd4AAQ_mLRcfP3h'
+        run: npx http-server dist -p 8081 &
+
+      - name: Wait for server
+        run: npx wait-on http://localhost:8081
+
+      - name: Run Playwright tests
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: mobile-app/playwright-report

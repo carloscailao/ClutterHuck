@@ -1,69 +1,71 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
-import { TextInput, Button, Text } from 'react-native-paper';
-import { supabase } from '@/lib/supabaseClient';
+// app/(auth)/index.tsx
+import { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import { supabase } from "@/lib/supabaseClient";
+import { ActivityIndicator, View } from "react-native";
+import type { Profiles } from "@/types/supabase";
 
-export default function AuthScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+export default function AuthIndex() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
-  const handleAuth = async () => {
-    setLoading(true);
-    try {
-      if (isSignUp) {
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
+  // Determine next onboarding step
+  function getNextOnboardingStep(user: Profiles) {
+    if (!user.firstName || !user.lastName || !user.username) return "./name" as const;
+    if (!user.avatar_url) return "./avatar" as const;
+    return "../../(tabs)/welcome" as const; // relative path from (auth) to (tabs)/welcome
+  }
 
-        // Auto-create profile row
-        if (data.user?.id) {
-          await supabase.from('profiles').insert([{ auth_uid: data.user.id }]);
+  useEffect(() => {
+    let active = true;
+
+    async function checkUser() {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const session = sessionData?.session;
+
+        // No session → redirect to welcome
+        if (!session?.user) {
+          if (active) router.replace("./welcome" as const);
+          return;
         }
 
-        Alert.alert('Success', 'Check your email to confirm your account.');
-      } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        // Fetch profile
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("auth_uid", session.user.id)
+          .single<Profiles>();
+
+        // No profile → register
+        if (error || !profile) {
+          if (active) router.replace("./register" as const);
+          return;
+        }
+
+        // Redirect to next onboarding step
+        const next = getNextOnboardingStep(profile);
+        if (active) router.replace(next);
+      } catch (err) {
+        console.error("AuthIndex error:", err);
+      } finally {
+        if (active) setLoading(false);
       }
-    } catch (err: any) {
-      Alert.alert('Error', err.message);
-    } finally {
-      setLoading(false);
     }
-  };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{isSignUp ? 'Sign Up' : 'Log In'}</Text>
-      <TextInput
-        label="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        style={styles.input}
-      />
-      <TextInput
-        label="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.input}
-      />
-      <Button mode="contained" onPress={handleAuth} loading={loading} style={styles.button}>
-        {isSignUp ? 'Sign Up' : 'Log In'}
-      </Button>
-      <Button onPress={() => setIsSignUp(!isSignUp)}>
-        {isSignUp ? 'Already have an account? Log In' : "Don't have an account? Sign Up"}
-      </Button>
-    </View>
-  );
+    checkUser();
+    return () => {
+      active = false;
+    };
+  }, [router]);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" }}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
+  return null;
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
-  title: { fontSize: 24, marginBottom: 20, textAlign: 'center' },
-  input: { marginBottom: 15 },
-  button: { marginBottom: 10 },
-});
